@@ -206,6 +206,90 @@ SELECT count(nombre_cliente) AS 'Nombre "Lionel"' FROM clientes WHERE nombre_cli
 -- ¿Cuántos clientes tenemos de cada nombre que hay en la tabla?
 -- con el nombre del cliente
 
-SELECT nombre_cliente AS 'Nombre de cliente', count(nombre_cliente) AS 'Cantidad de repeticiones' FROM clientes GROUP BY nombre_cliente;
+SELECT nombre_cliente AS 'Nombre de cliente', count(nombre_cliente) AS 'Cantidad de repeticiones' FROM clientes GROUP BY nombre_cliente ORDER BY 'Cantidad de repeticiones' DESC;
 
+-- Para realizar un alquiler:
+-- nombre_cliente, apellido_cliente, carnet_conducir, telefono, email
+-- modelo, fecha_alquiler
+-- Si el cliente no figura en la bbdd hay que añadirlo
+-- Con un Procedimiento Almacenado --> alquiler_vehiculo
+-- nombre_cliente, apellido_cliente, carnet_conducir, telefono, email, modelo, fecha_alquiler
 
+-- ----- Inicio version Profe -----
+DELIMITER //
+CREATE PROCEDURE alquiler_vehiculo(
+sp_nombre_cliente VARCHAR(50),
+sp_apellido_cliente VARCHAR(100),
+sp_carnet VARCHAR(12),
+sp_telefono VARCHAR(12),
+sp_email VARCHAR(100),
+sp_modelo VARCHAR(50),
+sp_fecha_recogida TIMESTAMP)
+BEGIN
+	DECLARE idCliente INT;
+    DECLARE idVehiculo INT;
+    
+    SELECT id_cliente INTO idCliente
+    FROM clientes
+    WHERE carnet_conducir = sp_carnet;
+    
+    IF idCliente IS NULL THEN
+		INSERT INTO clientes (nombre_cliente, apellido_cliente, carnet_conducir, telefono, email)
+ 		VALUES (sp_nombre_cliente, sp_apellido_cliente, sp_carnet, sp_telefono, sp_email);
+        SELECT id_cliente INTO idCliente
+		FROM clientes
+		WHERE carnet_conducir = sp_carnet;
+    END IF;
+    
+	SELECT id_vehiculo INTO idVehiculo
+    FROM vehiculos
+    WHERE nombre_modelo = sp_modelo;
+    
+    INSERT INTO alquileres (id_cliente, id_vehiculo, fecha_recogida)
+	VALUES (idCliente, idVehiculo, sp_fecha_recogida);
+    
+    SELECT "Alquiler realizado correctamente";
+    
+END //
+DELIMITER ;
+-- DROP PROCEDURE alquiler_vehiculo;
+-- ----- Fin version Profe -----
+
+-- ----- Inicio mi versión -----
+-- DELIMITER $$
+-- CREATE PROCEDURE insertAlquiler(nombreCliente VARCHAR(50),
+-- 								apellidoCliente VARCHAR(100),
+-- 								carnetConducir VARCHAR(12),
+--                                 numeroTelefono VARCHAR(12),
+--                                 direccionEmail VARCHAR(100),
+--                                 marcaModelo VARCHAR(50),
+--                                 fechaAlquiler TIMESTAMP)
+-- BEGIN
+-- 	SET @idCliente = (SELECT id_cliente FROM clientes cl WHERE cl.carnet_conducir = carnetConducir);
+--     SET @idVehiculo = (SELECT id_vehiculo FROM vehiculos ve WHERE ve.nombre_modelo = marcaModelo);
+-- --  Comprobamos si existe el cliente si no existe lo creamos
+-- 	IF @idCliente IS NULL THEN
+-- -- 		Hacemos un insert del nuevo cliente
+-- 		INSERT INTO clientes (nombre_cliente, apellido_cliente, carnet_conducir, telefono, email)
+-- 		VALUES (nombreCliente, apellidoCliente, carnetConducir, numeroTelefono, direccionEmail);
+-- 		SET @idCliente = (SELECT id_cliente FROM clientes cl WHERE cl.carnet_conducir = carnetConducir);
+-- 	END IF;
+-- -- 	Comprobamos si hay vehiculos disponibles
+-- 	IF @disponibilidadVehiculo IS NULL THEN
+-- -- 		Mostramos un mensaje de que no hay vehiculos disponibles
+-- -- 			SELECT concat("Ese libro no existe, no se puede prestar");
+-- -- 			SIGNAL SQLSTATE '45000'
+--  			SET MESSAGE_TEXT = "No hay vehiculos disponibles de este modelo, no se puede alquilar";
+--     ELSE
+-- -- 		Hacemos un insert del alquiler
+-- 		INSERT INTO alquileres (id_cliente, id_vehiculo, fecha_recogida, fecha_entrega, facturacion)
+-- 		VALUES (idCliente, idVehiculo, fechaAlquiler, '')
+--     END IF;
+-- END ;
+--  DELIMITER ;
+ 
+-- DROP PROCEDURE insertAlquiler;
+-- ----- Fin mi versión -----
+
+CALL alquiler_vehiculo ("Clark", "Kent", "6666", "666666666", "super@man.com", "Nissan Micra", "2024-12-25");
+CALL alquiler_vehiculo ("Clint", "Eastwood", "2222", "222222222", "clint@eastwood.com", "Fiat Panda", "2025-04-20");
