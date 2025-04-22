@@ -228,6 +228,7 @@ sp_fecha_recogida TIMESTAMP)
 BEGIN
 	DECLARE idCliente INT;
     DECLARE idVehiculo INT;
+    DECLARE disponibilidad INT;
     
     SELECT id_cliente INTO idCliente
     FROM clientes
@@ -241,19 +242,83 @@ BEGIN
 		WHERE carnet_conducir = sp_carnet;
     END IF;
     
-	SELECT id_vehiculo INTO idVehiculo
+    SELECT unidades_disponibles INTO disponibilidad
     FROM vehiculos
     WHERE nombre_modelo = sp_modelo;
     
-    INSERT INTO alquileres (id_cliente, id_vehiculo, fecha_recogida)
-	VALUES (idCliente, idVehiculo, sp_fecha_recogida);
+    SELECT id_vehiculo INTO idVehiculo
+    FROM vehiculos
+    WHERE nombre_modelo = sp_modelo;
     
-    SELECT "Alquiler realizado correctamente";
+    IF disponibilidad = 0 THEN
+		SELECT "No hay vehiculos disponibles de este modelo, no se puede alquilar";
+    ELSE
+        INSERT INTO alquileres (id_cliente, id_vehiculo, fecha_recogida)
+		VALUES (idCliente, idVehiculo, sp_fecha_recogida);
+		SELECT id_vehiculo INTO idVehiculo
+		FROM vehiculos
+		WHERE nombre_modelo = sp_modelo;
+    	UPDATE vehiculos SET unidades_disponibles = unidades_disponibles - 1 WHERE id_vehiculo = idVehiculo;
+        SELECT "Alquiler realizado correctamente";
+    END IF;
     
 END //
 DELIMITER ;
 -- DROP PROCEDURE alquiler_vehiculo;
 -- ----- Fin version Profe -----
+
+-- ----- Inicio mi version Profe -----
+-- DELIMITER //
+-- CREATE PROCEDURE alquiler_vehiculo(
+-- sp_nombre_cliente VARCHAR(50),
+-- sp_apellido_cliente VARCHAR(100),
+-- sp_carnet VARCHAR(12),
+-- sp_telefono VARCHAR(12),
+-- sp_email VARCHAR(100),
+-- sp_modelo VARCHAR(50),
+-- sp_fecha_recogida TIMESTAMP)
+-- BEGIN
+-- 	DECLARE idCliente INT;
+--     DECLARE idVehiculo INT;
+--     DECLARE disponibilidad INT;
+--     
+--     SELECT id_cliente INTO idCliente
+--     FROM clientes
+--     WHERE carnet_conducir = sp_carnet;
+--     
+--     IF idCliente IS NULL THEN
+-- 		INSERT INTO clientes (nombre_cliente, apellido_cliente, carnet_conducir, telefono, email)
+--  		VALUES (sp_nombre_cliente, sp_apellido_cliente, sp_carnet, sp_telefono, sp_email);
+--         SELECT id_cliente INTO idCliente
+-- 		FROM clientes
+-- 		WHERE carnet_conducir = sp_carnet;
+--     END IF;
+--     
+-- 	SELECT id_vehiculo INTO idVehiculo
+--     FROM vehiculos
+--     WHERE nombre_modelo = sp_modelo;
+--     
+--     SELECT unidades_disponibles INTO disponibilidad
+--     FROM vehiculos
+--     WHERE nombre_modelo = sp_modelo;
+--     
+--  	IF disponibilidad IS NULL THEN
+-- -- 		Mostramos un mensaje de que no hay vehiculos disponibles
+--  		SELECT "No hay vehiculos disponibles de este modelo, no se puede alquilar";
+--     ELSE
+-- -- 		Hacemos un insert del alquiler
+-- 		INSERT INTO alquileres (id_cliente, id_vehiculo, fecha_recogida)
+-- 		VALUES (idCliente, idVehiculo, sp_fecha_recogida);
+--         
+--         UPDATE vehiculos SET unidades_disponibles = unidades_disponibles - 1 WHERE nombre_modelo = sp_modelo;
+--     
+-- 		SELECT "Alquiler realizado correctamente";
+--     END IF;
+--     
+-- END //
+-- DELIMITER ;
+-- DROP PROCEDURE alquiler_vehiculo;
+-- ----- Fin mi version Profe -----
 
 -- ----- Inicio mi versión -----
 -- DELIMITER $$
@@ -293,3 +358,4 @@ DELIMITER ;
 
 CALL alquiler_vehiculo ("Clark", "Kent", "6666", "666666666", "super@man.com", "Nissan Micra", "2024-12-25");
 CALL alquiler_vehiculo ("Clint", "Eastwood", "2222", "222222222", "clint@eastwood.com", "Fiat Panda", "2025-04-20");
+
