@@ -8,7 +8,7 @@ DROP DATABASE IF EXISTS rentingcars;
 
 -- Hay que crear una bbdd que llamaremos rentingCars
 
-CREATE DATABASE IF NOT EXISTS rentingCars
+CREATE DATABASE IF NOT EXISTS rentingcars
 DEFAULT CHARACTER SET utf8mb3
 COLLATE utf8_general_ci
 ;
