@@ -1,6 +1,6 @@
 -- Hay que crear una bbdd que llamaremos rentingCars
 
-CREATE DATABASE IF NOT EXISTS rentingCars;
+-- CREATE DATABASE IF NOT EXISTS rentingCars;
 
 -- Borrar la BD rentingCars
 
@@ -138,6 +138,74 @@ MODIFY COLUMN tipo_vehiculo
 ENUM("moto", "coche", "bicicleta", "patinete", "furgoneta", "-") NOT NULL
 ;
 
+INSERT INTO vehiculos (
+nombre_modelo,
+unidades_totales,
+unidades_disponibles,
+personas,
+puertas,
+cambio,
+matricula,
+precioDia,
+tipo_vehiculo
+)
+VALUES 
+('Nissan Micra', 3, 3, 4, 3, "manual", "1111CCC", 49.5, "coche"),
+('Piaggio Vespa', 5, 5, 2, 0, "manual", "1111DDD", 55.4, "moto"),
+('Piaggio Beverly', 1, 1, 2, 0, "manual", "1111EEE", 60, "moto")
+;
 
+-- Necesitamos saber cuantos vehiculos tenemos en total
+-- lo mostraremos como 'total vehiculos'
+
+SELECT sum(unidades_totales) AS 'total vehiculos' FROM vehiculos;
+
+-- Necesitamos saber cuales son los vehiculos más baratos de alquilar
+-- lo mostraremos como 'vehículos económicos', con el precio
+
+SELECT nombre_modelo AS 'vehículos económicos', precioDia FROM vehiculos WHERE precioDia = (
+-- SELECT precioDia FROM vehiculos LIMIT 1
+SELECT min(precioDia) FROM vehiculos
+);
+
+-- ¿En un dia cuanto podriamos facturar?
+-- Es el producto (*) de unidades_totales x precioDia
+
+SELECT sum(unidades_totales * precioDia) FROM vehiculos;
+
+-- Introducir clientes
+-- ('Steve','Ballmer','1111','111111111','steve@ballmer.com'),
+-- ('Clint','Eastwood','2222','222222222','clint@eastwood.com'),
+-- ('Luciano','Pavarotti','3333','333333333',''),
+-- ('Lionel','Messi','4444','444444444','')
+-- ('Lionel','Ritchie','5555','555555555','lionel@ritchie.cat')
+
+INSERT INTO clientes
+(nombre_cliente, apellido_cliente, carnet_conducir, telefono, email)
+VALUES
+('Steve','Ballmer','1111','111111111','steve@ballmer.com'),
+('Clint','Eastwood','2222','222222222','clint@eastwood.com'),
+('Luciano','Pavarotti','3333','333333333',''),
+('Lionel','Messi','4444','444444444',''),
+('Lionel','Ritchie','5555','555555555','lionel@ritchie.cat')
+;
+
+-- Añadir este email --> lionel@antonella.ar
+UPDATE clientes
+SET email = 'lionel@antonella.ar'
+WHERE nombre_cliente = "Lionel"
+AND apellido_cliente = "Messi"
+;
+
+-- Queremos saber de que cliente no tenemos el email
+SELECT nombre_cliente, apellido_cliente FROM clientes WHERE email = '';
+
+-- ¿Cuántos clientes se llaman Lionel?
+SELECT count(nombre_cliente) AS 'Nombre "Lionel"' FROM clientes WHERE nombre_cliente = 'Lionel';
+
+-- ¿Cuántos clientes tenemos de cada nombre que hay en la tabla?
+-- con el nombre del cliente
+
+SELECT nombre_cliente AS 'Nombre de cliente', count(nombre_cliente) AS 'Cantidad de repeticiones' FROM clientes GROUP BY nombre_cliente;
 
 
